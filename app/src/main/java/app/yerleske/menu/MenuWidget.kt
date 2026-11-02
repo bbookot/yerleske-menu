@@ -68,7 +68,7 @@ class MenuWidget : GlanceAppWidget() {
             Column(GlanceModifier.fillMaxSize().background(ColorProvider(Color(0xFF153E34))).appWidgetBackground().cornerRadius(24.dp).padding(if (compact) 12.dp else 16.dp)) {
                 Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(GlanceModifier.defaultWeight().clickable(actionStartActivity<MainActivity>())) {
-                        Text("YTÜ · YEMEK", style = TextStyle(color = accent, fontWeight = FontWeight.Bold, fontSize = if (compact) 12.sp else 14.sp))
+                        Text("YTÜ · YEMEK · " + if (store.vegetarian) "VEJ" else "NORMAL", style = TextStyle(color = accent, fontWeight = FontWeight.Bold, fontSize = if (compact) 10.sp else 12.sp), maxLines = 1)
                         Text(dateLabel(plan.date), style = TextStyle(color = ink, fontWeight = FontWeight.Bold, fontSize = if (compact) 13.sp else 17.sp), maxLines = 1)
                     }
                     Text("↻", GlanceModifier.padding(8.dp).clickable(actionRunCallback<RefreshMenu>()), style = TextStyle(color = accent, fontSize = 23.sp))
@@ -86,11 +86,13 @@ class MenuWidget : GlanceAppWidget() {
                     }
                 } else Text("Bu gün yemek hizmeti verilmiyor.", GlanceModifier.defaultWeight(), style = TextStyle(color = ink, fontSize = 14.sp))
                 Spacer(GlanceModifier.height(6.dp))
-                Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Nav("‹", plan.offset > 0, -1)
-                    Text(if (plan.offset == 0) "Otomatik" else "+${plan.offset} gün", GlanceModifier.defaultWeight().padding(horizontal = 4.dp).clickable(actionRunCallback<NavigateMenu>(actionParametersOf(deltaKey to 0))), style = TextStyle(color = accent, fontSize = 11.sp, textAlign = TextAlign.Center))
-                    Text(if (store.vegetarian) "VEJ" else "NORMAL", style = TextStyle(color = muted, fontSize = 9.sp))
-                    Nav("›", plan.offset < 3, 1)
+                Box(GlanceModifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(if (plan.offset == 0) "Bugün" else "+${plan.offset} gün", GlanceModifier.padding(horizontal = 12.dp, vertical = 8.dp).clickable(actionRunCallback<NavigateMenu>(actionParametersOf(deltaKey to 0))), style = TextStyle(color = accent, fontSize = 11.sp, textAlign = TextAlign.Center))
+                    Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Nav("‹", plan.offset > 0, -1)
+                        Spacer(GlanceModifier.defaultWeight())
+                        Nav("›", plan.offset < 3, 1)
+                    }
                 }
                 if (!compact) {
                     val stale = updated == 0L || System.currentTimeMillis() - updated > 24*60*60*1000L
