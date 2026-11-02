@@ -1,0 +1,1 @@
+<resources><string name="widget_description">YTÜ öğrenci yemek menüsü. Öğün ve menü türünü uygulamadan seçebilirsiniz.</string><style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar"><item name="android:fontFamily">sans</item><item name="android:windowLightStatusBar">true</item></style></resources>

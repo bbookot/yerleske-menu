@@ -1,0 +1,20 @@
+name: Android kontrolleri
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: chmod +x gradlew
+      - run: ./gradlew assembleDebug testDebugUnitTest lintDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bilgisayar-test-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
