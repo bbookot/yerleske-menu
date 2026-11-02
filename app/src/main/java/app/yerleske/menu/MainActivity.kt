@@ -46,10 +46,11 @@ class MainActivity : ComponentActivity() {
             loading = true
             try {
                 store.refresh(YearMonth.from(selected))
+                store.refreshWeek(skipFresh = true)
                 days = store.days(YearMonth.from(selected))
                 updated = store.updated(YearMonth.from(selected))
                 message = if (days.isEmpty()) "Bu ayın menüsü henüz yayımlanmamış." else null
-                MenuWidget().updateAll(this@MainActivity)
+                redrawWidgets(this@MainActivity)
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { message = "Menü yenilenemedi. Kayıtlı veriler gösteriliyor. İnternet bağlantını kontrol edip yeniden dene." }
             finally { loading = false }
@@ -58,6 +59,11 @@ class MainActivity : ComponentActivity() {
             days = store.days(YearMonth.from(selected))
             updated = store.updated(YearMonth.from(selected))
             if (updated == 0L || System.currentTimeMillis() - updated > 6*60*60*1000L) refresh()
+            else {
+                try { store.refreshWeek(skipFresh = true); redrawWidgets(this@MainActivity) }
+                catch (e: CancellationException) { throw e }
+                catch (e: Exception) { message = "Gelecek haftanın bazı menüleri alınamadı; kayıtlı menüler kullanılabilir." }
+            }
         }
         val dark = when(theme) { 1 -> false; 2 -> true; else -> isSystemInDarkTheme() }
         MaterialTheme(colorScheme = if (dark) darkColorScheme(primary = Color(0xFFB4D78B)) else lightColorScheme(primary = Color(0xFF285A42), background = Color(0xFFF5F5EF), surface = Color(0xFFFDFDF7))) {
@@ -80,18 +86,20 @@ class MainActivity : ComponentActivity() {
                             }
                             Text(dateLabel(selected), fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(!evening, onClick = { evening = false; store.evening = false; scope.launch { MenuWidget().updateAll(this@MainActivity) } }, label = { Text("Öğle") })
-                                FilterChip(evening, onClick = { evening = true; store.evening = true; scope.launch { MenuWidget().updateAll(this@MainActivity) } }, label = { Text("Akşam") })
+                                FilterChip(!evening, onClick = { evening = false; store.evening = false; scope.launch { redrawWidgets(this@MainActivity) } }, label = { Text("Öğle") })
+                                FilterChip(evening, onClick = { evening = true; store.evening = true; scope.launch { redrawWidgets(this@MainActivity) } }, label = { Text("Akşam") })
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(!vegetarian, onClick = { vegetarian = false; store.vegetarian = false; scope.launch { MenuWidget().updateAll(this@MainActivity) } }, label = { Text("Normal") })
-                                FilterChip(vegetarian, onClick = { vegetarian = true; store.vegetarian = true; scope.launch { MenuWidget().updateAll(this@MainActivity) } }, label = { Text("Vejetaryen") })
+                                FilterChip(!vegetarian, onClick = { vegetarian = false; store.vegetarian = false; scope.launch { redrawWidgets(this@MainActivity) } }, label = { Text("Normal") })
+                                FilterChip(vegetarian, onClick = { vegetarian = true; store.vegetarian = true; scope.launch { redrawWidgets(this@MainActivity) } }, label = { Text("Vejetaryen") })
                             }
                             HorizontalDivider()
                             val key = if (evening) { if (vegetarian) "dinner2_menu" else "dinner_menu" } else { if (vegetarian) "lunch2_menu" else "lunch_menu" }
-                            val menu = days.find { it.date == selected }?.meals?.get(key).orEmpty()
+                            val closedReason = ServiceCalendar.reason(selected)
+                            val menu = if (closedReason != null) emptyList() else days.find { it.date == selected }?.meals?.get(key).orEmpty()
                             if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
-                            if (menu.isEmpty() && !loading) Text("Bu tarih ve öğün için yayımlanmış menü yok.", Modifier.padding(vertical = 16.dp))
+                            if (menu.isEmpty() && !loading) Text(closedReason ?: "Bu tarih ve öğün için yayımlanmış menü yok.", Modifier.padding(vertical = 16.dp))
+                            ServiceCalendar.calendarWarning(selected)?.let { Text(it, fontSize = 12.sp) }
                             menu.forEachIndexed { index, line ->
                                 Row(Modifier.padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                     Text("%02d".format(index + 1), color = MaterialTheme.colorScheme.primary, fontSize = 12.sp)
@@ -104,7 +112,7 @@ class MainActivity : ComponentActivity() {
                     }
                     message?.let { Text(it, color = MaterialTheme.colorScheme.primary, fontSize = 13.sp) }
                     Text("Ana ekranında da yanında", fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
-                    Text("Ana ekranda boş bir alana basılı tut → Widget'lar → Yerleşke Menü. Widget bugünün menüsünü, burada seçtiğin öğün ve menü türüyle gösterir.", fontSize = 14.sp)
+                    Text("Widget 14.30'a kadar öğle ve akşamı, 19.15'e kadar yalnız akşamı, sonra sonraki hizmet gününü gösterir. ‹ ve › ile üç gün ileri bakabilirsin. 7 günlük veri önceden hazırlanır. Hafta sonu ve resmî tatillerde hizmet yoktur. Geçişler Android pil yönetimi nedeniyle gecikebilir.", fontSize = 14.sp)
                     HorizontalDivider()
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Sürüm ${BuildConfig.VERSION_NAME}", Modifier.padding(top = 12.dp), fontSize = 12.sp)
@@ -137,3 +145,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+

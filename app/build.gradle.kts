@@ -12,8 +12,8 @@ android {
         applicationId = "app.yerleske.menu"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.environmentVariable("APP_VERSION_CODE").orElse("2").get().toInt()
-        versionName = providers.environmentVariable("APP_VERSION_NAME").orElse("0.1.1").get()
+        versionCode = providers.environmentVariable("APP_VERSION_CODE").orElse("3").get().toInt()
+        versionName = providers.environmentVariable("APP_VERSION_NAME").orElse("0.2.0").get()
         buildConfigField("String", "GITHUB_REPO", "\"${providers.gradleProperty("githubRepo").orElse("").get()}\"")
     }
     signingConfigs {

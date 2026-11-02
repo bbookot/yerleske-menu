@@ -14,6 +14,8 @@ import java.io.IOException
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.YearMonth
+import java.time.ZonedDateTime
+import java.time.Duration
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -56,6 +58,19 @@ class MenuStore(context: Context) {
     val mealLabel get() = (if (evening) "Akşam" else "Öğle") + " · " + if (vegetarian) "Vejetaryen" else "Normal"
     fun days(month: YearMonth): List<MenuDay> = runCatching { MenuParser.parse(prefs.getString("data_$month", "[]")!!) }.getOrDefault(emptyList())
     fun updated(month: YearMonth): Long = prefs.getLong("updated_$month", 0L)
+    fun widgetOffset(id: String, base: LocalDate): Int = if (prefs.getString("base_$id", "") == base.toString()) prefs.getInt("offset_$id", 0).coerceIn(0,3) else 0
+    fun setWidgetOffset(id: String, base: LocalDate, offset: Int) { prefs.edit().putString("base_$id", base.toString()).putInt("offset_$id", offset.coerceIn(0,3)).apply() }
+    suspend fun refreshWeek(start: LocalDate = WidgetPlanner.plan(ZonedDateTime.now(turkey)).base, skipFresh: Boolean = false) {
+        // Kaynak yalnızca aylık yanıt verir. Yedi günlük pencerenin bütün ayları önceden alınır.
+        val months = (listOf(YearMonth.from(today())) + WidgetPlanner.weekMonths(start)).distinct()
+        var error: Exception? = null
+        for (month in months) {
+            val age = System.currentTimeMillis() - updated(month)
+            if (skipFresh && updated(month) != 0L && age in 0..6*60*60*1000L) continue
+            try { refresh(month) } catch (e: kotlinx.coroutines.CancellationException) { throw e } catch (e: Exception) { error = e }
+        }
+        error?.let { throw it }
+    }
     suspend fun refresh(month: YearMonth) = withContext(Dispatchers.IO) {
         val formatted = String.format(Locale.ROOT, "%04d%02d", month.year, month.monthValue)
         val url = "https://sks.yildiz.edu.tr/api/food-menu?type=student_food_menu&list_date=$formatted&sort_by=date_asc"
@@ -79,12 +94,28 @@ class MenuApplication : Application() {
         val request = PeriodicWorkRequestBuilder<MenuWorker>(6, TimeUnit.HOURS)
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("menu-sync", ExistingPeriodicWorkPolicy.KEEP, request)
+        scheduleWidgetClock(this)
     }
 }
 class MenuWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val result = runCatching { MenuStore(applicationContext).refresh(YearMonth.from(today())) }
-        MenuWidget().updateAll(applicationContext)
+        val result = runCatching { MenuStore(applicationContext).refreshWeek() }
+        redrawWidgets(applicationContext)
         return if (result.isSuccess) Result.success() else Result.retry()
     }
 }
+
+fun scheduleWidgetClock(context: Context) {
+    val now = ZonedDateTime.now(turkey)
+    val transition = WidgetPlanner.nextTransition(now)
+    val request = OneTimeWorkRequestBuilder<WidgetClockWorker>().setInitialDelay(Duration.between(now, transition).toMillis().coerceAtLeast(1000), TimeUnit.MILLISECONDS).build()
+    WorkManager.getInstance(context).enqueueUniqueWork("widget-clock-${transition.toEpochSecond()}", ExistingWorkPolicy.KEEP, request)
+}
+class WidgetClockWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        redrawWidgets(applicationContext)
+        scheduleWidgetClock(applicationContext)
+        return Result.success()
+    }
+}
+
