@@ -1,6 +1,9 @@
 package app.yerleske.menu
 
 import android.os.Bundle
+import android.content.Intent
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -42,6 +45,13 @@ class MainActivity : ComponentActivity() {
         var checking by remember { mutableStateOf(false) }
         var downloading by remember { mutableStateOf(false) }
         val updater = remember { Updater(this) }
+        DisposableEffect(Unit) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) vegetarian = store.vegetarian
+            }
+            lifecycle.addObserver(observer)
+            onDispose { lifecycle.removeObserver(observer) }
+        }
         suspend fun refresh() {
             loading = true
             try {
@@ -77,6 +87,7 @@ class MainActivity : ComponentActivity() {
                         TextButton(onClick = { theme = (theme + 1) % 3; store.theme = theme }) { Text(listOf("Sistem", "Açık", "Koyu")[theme]) }
                     }
                     Text("YTÜ öğrenci yemek menüsü", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedButton(onClick = { startActivity(Intent(this@MainActivity, WidgetSettingsActivity::class.java)) }, modifier = Modifier.fillMaxWidth()) { Text("Widget ayarları") }
                     ElevatedCard(Modifier.fillMaxWidth()) {
                         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
