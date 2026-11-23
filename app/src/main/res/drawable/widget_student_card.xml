@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp" android:height="220dp"
+    android:viewportWidth="360" android:viewportHeight="220">
+    <path android:fillColor="#3467D9" android:pathData="M0,0H360V220H0Z" />
+    <!-- Cropped eight-point ornament echoes the dark star on the student card.
+         Kept as vector paths so the widget has no downloaded image dependency. -->
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#234D96" android:strokeWidth="5.5"
+        android:strokeLineJoin="miter"
+        android:pathData="M345,-48 L362,61 L436,12 L389,93 L501,110 L389,127 L436,208 L362,159 L345,268 L328,159 L254,208 L301,127 L189,110 L301,93 L254,12 L328,61 Z" />
+</vector>

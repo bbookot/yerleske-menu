@@ -4,6 +4,8 @@ YTÜ öğrenci yemek listesi için bağımsız Android uygulaması ve boyutland�
 
 ## Özellikler
 
+- Öğrenci kartından esinlenen mavi widget, koyu mavi yarım yıldız ve beyaz metin. Varsayılan boyut 4×2; tek öğün görünümü tüm içerik genişliğini kullanır.
+
 - Resmi SKS kaynağından aylık menü, öğle/akşam ve normal/vejetaryen seçimi.
 - Tarih gezintisi, açık/koyu/sistem teması, çevrimdışı önbellek ve son kontrol zamanı.
 - Widget 14:30'a kadar öğle ve akşamı birlikte, 14:30–19:15 arasında yalnız akşamı, sonrasında sonraki hizmet gününün iki öğününü gösterir. Saat dilimi Europe/Istanbul'dur.

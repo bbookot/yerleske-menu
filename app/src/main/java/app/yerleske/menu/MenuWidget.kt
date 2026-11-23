@@ -25,10 +25,10 @@ import androidx.glance.unit.ColorProvider
 import java.time.*
 import java.time.format.DateTimeFormatter
 
-private val ink = ColorProvider(Color(0xFFF5F5E9))
-private val muted = ColorProvider(Color(0xFFC1D3C7))
-private val accent = ColorProvider(Color(0xFFDAEDAB))
-private val panel = ColorProvider(Color(0xFF224F42))
+private val ink = ColorProvider(Color.White)
+private val muted = ColorProvider(Color(0xFFE2EAFF))
+private val accent = ColorProvider(Color.White)
+private val panel = ColorProvider(Color(0x163052A4))
 private val deltaKey = ActionParameters.Key<Int>("delta")
 private val revisionKey = longPreferencesKey("revision")
 suspend fun redrawWidgets(context: Context, only: GlanceId? = null) {
@@ -50,7 +50,7 @@ class MenuWidgetReceiver : GlanceAppWidgetReceiver() {
 }
 class MenuWidget : GlanceAppWidget() {
     override val stateDefinition = PreferencesGlanceStateDefinition
-    override val sizeMode = SizeMode.Responsive(setOf(DpSize(180.dp,180.dp), DpSize(280.dp,260.dp), DpSize(320.dp,360.dp)))
+    override val sizeMode = SizeMode.Responsive(setOf(DpSize(180.dp,180.dp), DpSize(280.dp,200.dp), DpSize(320.dp,280.dp)))
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
         key(currentState<Preferences>()[revisionKey]) {
@@ -65,24 +65,32 @@ class MenuWidget : GlanceAppWidget() {
         val dinner = day?.meals?.get("dinner$suffix").orEmpty()
         val updated = store.updated(month)
             val compact = LocalSize.current.height < 250.dp
-            Column(GlanceModifier.fillMaxSize().background(ColorProvider(Color(0xFF153E34))).appWidgetBackground().cornerRadius(24.dp).padding(if (compact) 12.dp else 16.dp)) {
+            Column(GlanceModifier.fillMaxSize().background(ImageProvider(R.drawable.widget_student_card)).appWidgetBackground().cornerRadius(20.dp).padding(if (compact) 10.dp else 16.dp)) {
                 Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Column(GlanceModifier.defaultWeight().clickable(actionStartActivity<MainActivity>())) {
                         Text("YTÜ · YEMEK · " + if (store.vegetarian) "VEJ" else "NORMAL", style = TextStyle(color = accent, fontWeight = FontWeight.Bold, fontSize = if (compact) 10.sp else 12.sp), maxLines = 1)
                         Text(dateLabel(plan.date), style = TextStyle(color = ink, fontWeight = FontWeight.Bold, fontSize = if (compact) 13.sp else 17.sp), maxLines = 1)
                     }
-                    Text("↻", GlanceModifier.padding(8.dp).clickable(actionRunCallback<RefreshMenu>()), style = TextStyle(color = accent, fontSize = 23.sp))
+                    Text("↻", GlanceModifier.padding(if (compact) 4.dp else 8.dp).clickable(actionRunCallback<RefreshMenu>()), style = TextStyle(color = accent, fontSize = 23.sp))
                 }
                 plan.notice?.let { Text(it, style = TextStyle(color = accent, fontSize = 10.sp), maxLines = 2) }
                 ServiceCalendar.calendarWarning(plan.date)?.let { Text(it, style = TextStyle(color = accent, fontSize = 10.sp), maxLines = 2) }
-                Spacer(GlanceModifier.height(8.dp))
+                Spacer(GlanceModifier.height(if (compact) 4.dp else 8.dp))
                 if (ServiceCalendar.reason(plan.date) == null) {
-                    Row(GlanceModifier.fillMaxWidth().defaultWeight()) {
-                        if (plan.lunch) {
+                    if (plan.lunch && plan.dinner) {
+                        Row(GlanceModifier.fillMaxWidth().defaultWeight()) {
                             MealPanel("ÖĞLE", "11.30 – 14.30", lunch, compact, GlanceModifier.defaultWeight())
                             Spacer(GlanceModifier.width(8.dp))
+                            MealPanel("AKŞAM", "17.00 – 19.15", dinner, compact, GlanceModifier.defaultWeight())
                         }
-                        if (plan.dinner) MealPanel("AKŞAM", "17.00 – 19.15", dinner, compact, GlanceModifier.defaultWeight())
+                    } else if (plan.dinner) {
+                        Row(GlanceModifier.fillMaxWidth().defaultWeight()) {
+                            MealPanel("AKŞAM", "17.00 – 19.15", dinner, compact, GlanceModifier.fillMaxWidth())
+                        }
+                    } else if (plan.lunch) {
+                        Row(GlanceModifier.fillMaxWidth().defaultWeight()) {
+                            MealPanel("ÖĞLE", "11.30 – 14.30", lunch, compact, GlanceModifier.fillMaxWidth())
+                        }
                     }
                 } else Text("Bu gün yemek hizmeti verilmiyor.", GlanceModifier.defaultWeight(), style = TextStyle(color = ink, fontSize = 14.sp))
                 Spacer(GlanceModifier.height(6.dp))
@@ -108,8 +116,8 @@ private fun MealPanel(title: String, hours: String, meals: List<String>, compact
     Column(modifier.fillMaxHeight().background(panel).cornerRadius(14.dp).padding(if (compact) 8.dp else 12.dp).clickable(actionStartActivity<MainActivity>())) {
         Text(title, style = TextStyle(color = accent, fontWeight = FontWeight.Bold, fontSize = 11.sp))
         if (!compact) Text(hours, style = TextStyle(color = muted, fontSize = 9.sp))
-        Spacer(GlanceModifier.height(6.dp))
-        Text(if (meals.isEmpty()) "Menü henüz yayımlanmadı" else meals.joinToString("\n") { it.replace(Regex("\\s*\\([^)]*kcal\\)", RegexOption.IGNORE_CASE), "") }, style = TextStyle(color = ink, fontSize = if (compact) 10.sp else 12.sp), maxLines = if (compact) 3 else 14)
+        Spacer(GlanceModifier.height(if (compact) 4.dp else 6.dp))
+        Text(if (meals.isEmpty()) "Menü henüz yayımlanmadı" else meals.joinToString("\n") { it.replace(Regex("\\s*\\([^)]*kcal\\)", RegexOption.IGNORE_CASE), "") }, style = TextStyle(color = ink, fontSize = if (compact) 10.sp else 12.sp), maxLines = 14)
     }
 }
 @Composable
