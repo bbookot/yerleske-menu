@@ -12,7 +12,7 @@ android {
         applicationId = "app.yerleske.menu"
         minSdk = 26
         targetSdk = 35
-        versionCode = providers.environmentVariable("APP_VERSION_CODE").orElse("7").get().toInt()
+        versionCode = providers.environmentVariable("APP_VERSION_CODE").orElse("8").get().toInt()
         versionName = providers.environmentVariable("APP_VERSION_NAME").orElse("0.4.0").get()
         buildConfigField("String", "GITHUB_REPO", "\"${providers.gradleProperty("githubRepo").orElse("").get()}\"")
     }

@@ -2,8 +2,13 @@ package app.yerleske.menu
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -49,6 +54,22 @@ class MenuWidgetReceiver : GlanceAppWidgetReceiver() {
 private fun themed(options: WidgetOptions, color: (WidgetColors) -> Int): ColorProvider =
     DayNightColorProvider(Color(color(options.colors(false))), Color(color(options.colors(true))))
 
+private fun starMask(alpha: Int): Bitmap {
+    // Glance 1.1 tinting blends translucent tint over the white source. Put the
+    // opacity in the mask itself and tint with an opaque day/night colour instead.
+    val bitmap = Bitmap.createBitmap(360,220,Bitmap.Config.ARGB_8888)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = android.graphics.Color.WHITE
+        this.alpha = alpha
+        style = Paint.Style.STROKE
+        strokeWidth = 5.5f
+        strokeJoin = Paint.Join.MITER
+    }
+    val path = Path().apply { StarShape.points.forEachIndexed { index, (x,y) -> if (index == 0) moveTo(x,y) else lineTo(x,y) }; close() }
+    Canvas(bitmap).drawPath(path,paint)
+    return bitmap
+}
+
 class MenuWidget : GlanceAppWidget() {
     override val stateDefinition = PreferencesGlanceStateDefinition
     override val sizeMode = SizeMode.Responsive(setOf(DpSize(180.dp,180.dp), DpSize(280.dp,200.dp), DpSize(320.dp,280.dp)))
@@ -69,7 +90,10 @@ class MenuWidget : GlanceAppWidget() {
                 val updated = store.updated(month)
                 val compact = LocalSize.current.height < 250.dp
                 Box(GlanceModifier.fillMaxSize().background(themed(options) { it.background }).appWidgetBackground().cornerRadius(20.dp)) {
-                    if (options.star > 0) Image(ImageProvider(R.drawable.widget_star_mask), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.FillBounds, colorFilter = ColorFilter.tint(themed(options) { it.star }))
+                    if (options.star > 0) {
+                        val mask = remember(options.colors(false).star ushr 24) { starMask(options.colors(false).star ushr 24) }
+                        Image(ImageProvider(mask), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.FillBounds, colorFilter = ColorFilter.tint(themed(options) { it.star or 0xFF000000.toInt() }))
+                    }
                     Column(GlanceModifier.fillMaxSize().padding(if (compact) 10.dp else 16.dp)) {
                         Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Column(GlanceModifier.defaultWeight().clickable(actionStartActivity<MainActivity>())) {
