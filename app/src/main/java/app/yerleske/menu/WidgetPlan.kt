@@ -20,6 +20,15 @@ object ServiceCalendar {
     fun calendarWarning(date: LocalDate): String? = if (date.year !in 2026..2027) "Bu yılın dinî tatil takvimi için uygulama güncellemesi gerekli" else null
 }
 data class WidgetPlan(val base: LocalDate, val date: LocalDate, val lunch: Boolean, val dinner: Boolean, val notice: String?, val offset: Int)
+object AppMenuPlanner {
+    fun meals(now: ZonedDateTime, date: LocalDate, timedMeals: Boolean, manualEvening: Boolean? = null): List<Boolean> {
+        if (ServiceCalendar.reason(date) != null) return emptyList()
+        if (manualEvening != null) return listOf(manualEvening)
+        val plan = WidgetPlanner.plan(now,timedMeals = timedMeals)
+        val currentServiceDay = date == now.withZoneSameInstant(turkey).toLocalDate() && date == plan.date
+        return buildList { if (!currentServiceDay || plan.lunch) add(false); if (!currentServiceDay || plan.dinner) add(true) }
+    }
+}
 object WidgetPlanner {
     val lunchEnd: LocalTime = LocalTime.of(14,30)
     val dinnerEnd: LocalTime = LocalTime.of(19,15)

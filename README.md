@@ -26,7 +26,8 @@ YTÜ öğrenci yemek listesi için bağımsız Android uygulaması ve boyutland�
 ## Uygulama ayarları
 
 - Minimal liste görünümü; Açık / Koyu / Sistem modu, altı vurgu rengi, üç yazı boyutu ve Rahat / Sıkı liste aralığı.
-- Başlangıç öğünü: Öğle, Akşam veya Son seçilen. Kalori, servis saatleri ve son kontrol bilgisi ayrı açılıp kapatılır.
+- İlk açılış ve **Bugün** düğmesi, saat ayarı açık veya kapalı olsa da otomatik hizmet tarihine döner. 19.15 sonrası sonraki hizmet gününün iki öğünü birlikte açılır. Ayar kapalıyken otomatik görünüm 14.30'a kadar iki öğün, ardından yalnız akşamı gösterir; Öğle / Akşam düğmeleriyle elle seçim yapılabilir. **Otomatik** veya **Bugün** düğmesi elle seçimi bırakır.
+- Tarih gezintisinde ilk öğün: Öğle, Akşam veya Son seçilen. Kalori, servis saatleri ve son kontrol bilgisi ayrı açılıp kapatılır.
 - İsteğe bağlı **Saate göre tek öğün göster**, uygulama ve widget için ortaktır. Hizmet günlerinde 00.00–06.00 iki öğün, 06.00–14.30 yalnız öğle, 14.30–19.15 yalnız akşam, 19.15 sonrası sonraki hizmet gününün iki öğünü gösterilir. Hafta sonu ve tatiller atlanır; elle geleceğe bakıldığında iki öğün görünür. Saat dilimi Europe/Istanbul'dur. Ayar kapalıyken önceki widget davranışı ve elle uygulama öğün seçimi korunur.
 - Uygulama ve widget görünümü bağımsızdır; menü türü ve saat kuralı ortaktır. Güncelleme mevcut tema, öğün ve widget tercihlerini silmez. Yeni saat ayarı varsayılan olarak kapalıdır.
 - Uygulama açıkken saat sınırları yeniden değerlendirilir; widget 06.00, 14.30, 19.15 ve gece yarısı için arka plan işi planlar. Widget geçişleri Android pil yönetimine tabidir; kesin saniyede çalışma garantisi yoktur.

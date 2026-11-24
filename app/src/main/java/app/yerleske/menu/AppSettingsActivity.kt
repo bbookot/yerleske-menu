@@ -52,8 +52,8 @@ class AppSettingsActivity : ComponentActivity() {
                         SettingsToggleRow("Saate göre tek öğün göster", options.timedMeals) { change(options.copy(timedMeals = it)) }
                         Text("Uygulama ve widget için ortak: 06.00–14.30 yalnız öğle; 14.30–19.15 yalnız akşam. Akşamdan sonra sonraki hizmet gününün iki öğünü, 06.00’ya kadar birlikte görünür. İleri tarihlerde iki öğün gösterilir.",Modifier.padding(vertical = 10.dp),fontSize = 12.sp,color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (!options.timedMeals) {
-                            SettingsChoice("Başlangıç öğünü",options.startMeal.label,StartMeal.entries.map { it.label }) { change(options.copy(startMeal = StartMeal.entries[it])) }
-                            Text("Son seçilen: uygulamayı en son baktığın öğünle açar.",fontSize = 12.sp,color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            SettingsChoice("Tarih gezintisinde ilk öğün",options.startMeal.label,StartMeal.entries.map { it.label }) { change(options.copy(startMeal = StartMeal.entries[it])) }
+                            Text("Elle tarih gezerken bu öğün seçilir. Son seçilen, en son baktığın öğündür. İlk açılış ve Bugün düğmesi her zaman otomatik menüyü gösterir; akşam servisi bitince sonraki hizmet gününün iki öğünü açılır.",fontSize = 12.sp,color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         SettingsChoice("Menü türü",if (vegetarian) "Vejetaryen" else "Normal",listOf("Normal","Vejetaryen")) {
                             vegetarian = it == 1; MenuStore(this@AppSettingsActivity).vegetarian = vegetarian; change(options)

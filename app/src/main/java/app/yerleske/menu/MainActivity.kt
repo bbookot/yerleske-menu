@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
         var options by remember { mutableStateOf(settings.read()) }
         var now by remember { mutableStateOf(ZonedDateTime.now(turkey)) }
         var following by remember { mutableStateOf(true) }
-        var selected by remember { mutableStateOf(if (options.timedMeals) WidgetPlanner.plan(now).date else today()) }
+        var selected by remember { mutableStateOf(WidgetPlanner.plan(now).date) }
         var days by remember { mutableStateOf(store.days(YearMonth.from(selected))) }
         var evening by remember { mutableStateOf(options.startMeal.initialEvening(store.evening)) }
         var vegetarian by remember { mutableStateOf(store.vegetarian) }
@@ -64,7 +64,12 @@ class MainActivity : ComponentActivity() {
         } } }
         val automatic = WidgetPlanner.plan(now,timedMeals = options.timedMeals)
         LaunchedEffect(automatic.date,options.timedMeals,following) {
-            if (following) selected = if (options.timedMeals) automatic.date else now.toLocalDate()
+            if (following) selected = automatic.date
+        }
+        fun returnToAutomatic() {
+            val clickedNow = ZonedDateTime.now(turkey)
+            now = clickedNow; following = true
+            selected = WidgetPlanner.plan(clickedNow,timedMeals = options.timedMeals).date
         }
         suspend fun refresh() {
             loading = true
@@ -107,13 +112,15 @@ class MainActivity : ComponentActivity() {
                     Text(dateLabel(selected),fontSize = 21.sp,fontWeight = FontWeight.SemiBold)
                     Row(Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilledTonalButton(onClick = { following = false; selected = selected.minusDays(1) },modifier = Modifier.weight(1f),contentPadding = PaddingValues(8.dp)) { Text("‹ Önceki") }
-                        Button(onClick = { following = true; selected = if (options.timedMeals) automatic.date else today() },modifier = Modifier.weight(1f)) { Text("Bugün") }
+                        Button(onClick = { returnToAutomatic() },modifier = Modifier.weight(1f)) { Text("Bugün") }
                         FilledTonalButton(onClick = { following = false; selected = selected.plusDays(1) },modifier = Modifier.weight(1f),contentPadding = PaddingValues(8.dp)) { Text("Sonraki ›") }
                     }
                     if (!options.timedMeals) Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        FilterChip(!evening,onClick = { evening = false; store.evening = false },label = { Text("Öğle") })
-                        FilterChip(evening,onClick = { evening = true; store.evening = true },label = { Text("Akşam") })
-                    } else Text("Saate göre otomatik · " + if (selected == automatic.date && automatic.date != now.toLocalDate()) "Sonraki hizmet günü" else if (selected != now.toLocalDate()) "İki öğün" else if (automatic.lunch && automatic.dinner) "Öğle ve akşam" else if (automatic.lunch) "Öğle" else "Akşam",fontSize = 13.sp,color = MaterialTheme.colorScheme.primary)
+                        FilterChip(following,onClick = { returnToAutomatic() },label = { Text("Otomatik") })
+                        FilterChip(!following && !evening,onClick = { following = false; evening = false; store.evening = false },label = { Text("Öğle") })
+                        FilterChip(!following && evening,onClick = { following = false; evening = true; store.evening = true },label = { Text("Akşam") })
+                    }
+                    if (following || options.timedMeals) Text("Saate göre otomatik · " + if (selected == automatic.date && automatic.date != now.toLocalDate()) "Sonraki hizmet günü" else if (selected != now.toLocalDate()) "İki öğün" else if (automatic.lunch && automatic.dinner) "Öğle ve akşam" else if (automatic.lunch) "Öğle" else "Akşam",fontSize = 13.sp,color = MaterialTheme.colorScheme.primary)
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp),verticalAlignment = Alignment.CenterVertically) {
                         FilterChip(!vegetarian,onClick = { vegetarian = false; store.vegetarian = false; scope.launch { redrawWidgets(this@MainActivity) } },label = { Text("Normal") })
                         FilterChip(vegetarian,onClick = { vegetarian = true; store.vegetarian = true; scope.launch { redrawWidgets(this@MainActivity) } },label = { Text("Vejetaryen") })
@@ -122,12 +129,11 @@ class MainActivity : ComponentActivity() {
                     val closedReason = ServiceCalendar.reason(selected)
                     if (closedReason != null) Text(closedReason,Modifier.padding(vertical = 20.dp))
                     else {
-                        val timedToday = options.timedMeals && selected == now.toLocalDate() && automatic.date == selected
-                        val meals = if (!options.timedMeals) listOf(evening) else buildList { if (!timedToday || automatic.lunch) add(false); if (!timedToday || automatic.dinner) add(true) }
+                        val meals = AppMenuPlanner.meals(now,selected,options.timedMeals,if (!following && !options.timedMeals) evening else null)
                         meals.forEach { dinner ->
                             val key = if (dinner) { if (vegetarian) "dinner2_menu" else "dinner_menu" } else { if (vegetarian) "lunch2_menu" else "lunch_menu" }
                             val lines = days.find { it.date == selected }?.meals?.get(key).orEmpty()
-                            if (options.timedMeals) Text(if (dinner) "AKŞAM" else "ÖĞLE",color = MaterialTheme.colorScheme.primary,fontWeight = FontWeight.SemiBold,fontSize = 14.sp)
+                            if (following || options.timedMeals) Text(if (dinner) "AKŞAM" else "ÖĞLE",color = MaterialTheme.colorScheme.primary,fontWeight = FontWeight.SemiBold,fontSize = 14.sp)
                             HorizontalDivider()
                             if (lines.isEmpty() && !loading) Text("Bu tarih ve öğün için yayımlanmış menü yok.",Modifier.padding(vertical = 16.dp))
                             Column { lines.forEachIndexed { index,line ->
