@@ -91,8 +91,13 @@ class MenuWidget : GlanceAppWidget() {
                 val compact = LocalSize.current.height < 250.dp
                 Box(GlanceModifier.fillMaxSize().background(themed(options) { it.background }).appWidgetBackground().cornerRadius(20.dp)) {
                     if (options.star > 0) {
+                        if (options.starStyle == WidgetStarStyle.GOLD_BRUSH) {
+                            val gold = remember(options.colors(false).star ushr 24) { goldStarBitmap(options.colors(false).star ushr 24) }
+                            Image(ImageProvider(gold), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
+                        } else {
                         val mask = remember(options.colors(false).star ushr 24) { starMask(options.colors(false).star ushr 24) }
                         Image(ImageProvider(mask), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.FillBounds, colorFilter = ColorFilter.tint(themed(options) { it.star or 0xFF000000.toInt() }))
+                        }
                     }
                     Column(GlanceModifier.fillMaxSize().padding(if (compact) 10.dp else 16.dp)) {
                         Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

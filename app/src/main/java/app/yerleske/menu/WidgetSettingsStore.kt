@@ -9,6 +9,7 @@ class WidgetSettingsStore(private val context: Context) {
         palette = enum("palette", WidgetPalette.BLUE),
         mode = enum("mode", WidgetMode.CARD),
         star = prefs.getInt("star", 2),
+        starStyle = enum("star_style", WidgetStarStyle.CLASSIC),
         font = enum("font", WidgetFont.NORMAL),
         vegetarian = MenuStore(context).vegetarian,
         hours = prefs.getBoolean("hours", true),
@@ -20,6 +21,7 @@ class WidgetSettingsStore(private val context: Context) {
         val value = options.normalized()
         prefs.edit().putString("palette",value.palette.name).putString("mode",value.mode.name)
             .putInt("star",value.star).putString("font",value.font.name)
+            .putString("star_style",value.starStyle.name)
             .putBoolean("hours",value.hours).putBoolean("calories",value.calories)
             .putBoolean("updated",value.updated).putInt("opacity",value.opacity).apply()
         MenuStore(context).vegetarian = value.vegetarian

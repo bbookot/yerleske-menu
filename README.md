@@ -5,7 +5,7 @@ YTÜ öğrenci yemek listesi için bağımsız Android uygulaması ve boyutland�
 ## Özellikler
 
 - Uygulamadaki **Widget ayarları** ekranında canlı örnek önizleme ve varsayılana dönüş.
-- Altı renk paleti; Kart / Açık / Koyu / Sistem görünümü; yıldız deseni ve belirginlik seçimi.
+- Altı renk paleti; Kart / Açık / Koyu / Sistem görünümü; Klasik veya Altın fırça yıldızı ve belirginlik seçimi. Altın fırça sabit, küçük bir çizimdir; animasyon içermez. Mevcut kurulumlarda Klasik stili korunur.
 - Üç yazı boyutu, normal/vejetaryen menü, servis saati / kalori / son yenileme görünürlüğü ve dört saydamlık seviyesi. Ayarlar cihazdaki bütün widget'lara ortak uygulanır.
 - Yemekler kısa widget'ta sığmadığında listeler ayrı ayrı kaydırılabilir. Sistem modu, destekleyen Android sürümlerinde yeniden ağ isteği olmadan açık/koyu renge uyum sağlar.
 

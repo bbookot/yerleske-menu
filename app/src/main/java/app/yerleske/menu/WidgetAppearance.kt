@@ -9,11 +9,13 @@ enum class WidgetPalette(val label: String, val card: Int, val light: Int, val d
     CHARCOAL("Antrasit", 0xFF485563.toInt(), 0xFFEDF0F3.toInt(), 0xFF20272E.toInt(), 0xFF28343F.toInt(), 0xFF283540.toInt())
 }
 enum class WidgetMode(val label: String) { CARD("Kart"), LIGHT("Açık"), DARK("Koyu"), SYSTEM("Sistem") }
+enum class WidgetStarStyle(val label: String) { CLASSIC("Klasik"), GOLD_BRUSH("Altın fırça") }
 enum class WidgetFont(val label: String, val scale: Float) { SMALL("Küçük", .9f), NORMAL("Normal boy", 1f), LARGE("Büyük", 1.2f) }
 data class WidgetOptions(
     val palette: WidgetPalette = WidgetPalette.BLUE,
     val mode: WidgetMode = WidgetMode.CARD,
     val star: Int = 2,
+    val starStyle: WidgetStarStyle = WidgetStarStyle.CLASSIC,
     val font: WidgetFont = WidgetFont.NORMAL,
     val vegetarian: Boolean = false,
     val hours: Boolean = true,

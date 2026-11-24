@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
@@ -89,7 +92,12 @@ class WidgetSettingsActivity : ComponentActivity() {
                 }
                 Text("Kart: mevcut canlı görünüm. Sistem: telefonla birlikte açık/koyu değişir.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-                SettingTitle("Yıldız deseni")
+                SettingTitle("Yıldız stili")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    WidgetStarStyle.entries.forEach { style -> FilterChip(options.starStyle == style, onClick = { change(options.copy(starStyle = style)) }, label = { Text(style.label) }) }
+                }
+                Text("Altın fırça: koyu sarı yıldız ve hafif fırça parlaklığı. Lacivert paletle deneyebilirsin.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SettingTitle("Yıldız belirginliği")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("Kapalı", "Silik", "Orta", "Belirgin").forEachIndexed { index, label -> FilterChip(options.star == index, onClick = { change(options.copy(star = index)) }, label = { Text(label) }) }
                 }
@@ -142,7 +150,10 @@ private fun WidgetPreview(options: WidgetOptions, systemDark: Boolean) {
             for (x in 0..(size.width / cell).toInt()) for (y in 0..(size.height / cell).toInt()) drawRect(if ((x+y)%2 == 0) Color(0xFFAEB7C5) else Color(0xFFD4D9E2), topLeft = androidx.compose.ui.geometry.Offset(x*cell,y*cell), size = androidx.compose.ui.geometry.Size(cell,cell))
         }
         Box(Modifier.fillMaxSize().background(Color(colors.background))) {
-            if (options.star > 0) Canvas(Modifier.fillMaxSize()) {
+            if (options.star > 0 && options.starStyle == WidgetStarStyle.GOLD_BRUSH) {
+                val gold = remember(colors.star ushr 24) { goldStarBitmap(colors.star ushr 24).asImageBitmap() }
+                Image(gold, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
+            } else if (options.star > 0) Canvas(Modifier.fillMaxSize()) {
                 val path = Path().apply { StarShape.points.forEachIndexed { i, (x,y) -> if (i == 0) moveTo(x/360*size.width,y/220*size.height) else lineTo(x/360*size.width,y/220*size.height) }; close() }
                 drawPath(path, Color(colors.star), style = Stroke(size.width/360*5.5f))
             }
