@@ -78,10 +78,11 @@ class MenuWidget : GlanceAppWidget() {
             key(currentState<Preferences>()[revisionKey]) {
                 val store = MenuStore(context)
                 val options = WidgetSettingsStore(context).read()
+                val timedMeals = AppSettingsStore(context).read().timedMeals
                 val ink = themed(options) { it.text }
                 val muted = themed(options) { it.secondary }
                 val base = WidgetPlanner.plan(ZonedDateTime.now(turkey)).base
-                val plan = WidgetPlanner.plan(ZonedDateTime.now(turkey), store.widgetOffset(id.toString(), base))
+                val plan = WidgetPlanner.plan(ZonedDateTime.now(turkey), store.widgetOffset(id.toString(), base), timedMeals)
                 val month = YearMonth.from(plan.date)
                 val day = store.days(month).find { it.date == plan.date }
                 val suffix = if (options.vegetarian) "2_menu" else "_menu"

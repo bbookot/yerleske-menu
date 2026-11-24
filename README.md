@@ -23,6 +23,14 @@ YTÜ öğrenci yemek listesi için bağımsız Android uygulaması ve boyutland�
 - GitHub Releases üzerinden kullanıcı onaylı APK güncellemesi; paket, sürüm ve imza doğrulaması.
 - Hesap, reklam ve analiz SDK'sı yoktur. Menü istekleri YTÜ'ye, güncelleme istekleri GitHub'a gider; bu hizmetler bağlantı bilgilerini görebilir.
 
+## Uygulama ayarları
+
+- Minimal liste görünümü; Açık / Koyu / Sistem modu, altı vurgu rengi, üç yazı boyutu ve Rahat / Sıkı liste aralığı.
+- Başlangıç öğünü: Öğle, Akşam veya Son seçilen. Kalori, servis saatleri ve son kontrol bilgisi ayrı açılıp kapatılır.
+- İsteğe bağlı **Saate göre tek öğün göster**, uygulama ve widget için ortaktır. Hizmet günlerinde 00.00–06.00 iki öğün, 06.00–14.30 yalnız öğle, 14.30–19.15 yalnız akşam, 19.15 sonrası sonraki hizmet gününün iki öğünü gösterilir. Hafta sonu ve tatiller atlanır; elle geleceğe bakıldığında iki öğün görünür. Saat dilimi Europe/Istanbul'dur. Ayar kapalıyken önceki widget davranışı ve elle uygulama öğün seçimi korunur.
+- Uygulama ve widget görünümü bağımsızdır; menü türü ve saat kuralı ortaktır. Güncelleme mevcut tema, öğün ve widget tercihlerini silmez. Yeni saat ayarı varsayılan olarak kapalıdır.
+- Uygulama açıkken saat sınırları yeniden değerlendirilir; widget 06.00, 14.30, 19.15 ve gece yarısı için arka plan işi planlar. Widget geçişleri Android pil yönetimine tabidir; kesin saniyede çalışma garantisi yoktur.
+
 ## Geliştirme
 
 Java 17, Android SDK 35 ve Build Tools 35.0.0 gerekir. `local.properties` içinde SDK yolunu ayarlayın.

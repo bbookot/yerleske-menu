@@ -23,7 +23,7 @@ data class WidgetPlan(val base: LocalDate, val date: LocalDate, val lunch: Boole
 object WidgetPlanner {
     val lunchEnd: LocalTime = LocalTime.of(14,30)
     val dinnerEnd: LocalTime = LocalTime.of(19,15)
-    fun plan(now: ZonedDateTime, offset: Int = 0): WidgetPlan {
+    fun plan(now: ZonedDateTime, offset: Int = 0, timedMeals: Boolean = false): WidgetPlan {
         val local = now.withZoneSameInstant(turkey)
         val today = local.toLocalDate()
         val closed = ServiceCalendar.reason(today)
@@ -33,11 +33,12 @@ object WidgetPlanner {
         val reason = ServiceCalendar.reason(date)
         val notice = reason ?: if (safeOffset == 0 && closed != null) "Bugün: $closed" else null
         val lunch = reason == null && (date != today || local.toLocalTime() < lunchEnd)
-        return WidgetPlan(base, date, lunch, reason == null, notice, safeOffset)
+        val dinner = reason == null && !(timedMeals && date == today && local.toLocalTime() >= LocalTime.of(6,0) && local.toLocalTime() < lunchEnd)
+        return WidgetPlan(base, date, lunch, dinner, notice, safeOffset)
     }
     fun weekMonths(start: LocalDate): List<YearMonth> = (0L..6L).map { YearMonth.from(start.plusDays(it)) }.distinct()
     fun nextTransition(now: ZonedDateTime): ZonedDateTime {
         val local = now.withZoneSameInstant(turkey)
-        return listOf(local.toLocalDate().atTime(lunchEnd).atZone(turkey), local.toLocalDate().atTime(dinnerEnd).atZone(turkey), local.toLocalDate().plusDays(1).atStartOfDay(turkey)).first { it > local }
+        return listOf(local.toLocalDate().atTime(6,0).atZone(turkey), local.toLocalDate().atTime(lunchEnd).atZone(turkey), local.toLocalDate().atTime(dinnerEnd).atZone(turkey), local.toLocalDate().plusDays(1).atStartOfDay(turkey)).first { it > local }
     }
 }

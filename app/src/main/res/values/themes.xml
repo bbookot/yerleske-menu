@@ -1,0 +1,24 @@
+<resources>
+    <color name="app_dark">#12151B</color>
+    <color name="app_light">#FAFBFD</color>
+    <color name="app_start">#FAFBFD</color>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@color/app_start</item>
+    </style>
+    <style name="AppTheme.Light" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@color/app_light</item>
+        <item name="android:statusBarColor">@color/app_light</item>
+        <item name="android:navigationBarColor">@color/app_light</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+    <style name="AppTheme.Dark" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowBackground">@color/app_dark</item>
+        <item name="android:statusBarColor">@color/app_dark</item>
+        <item name="android:navigationBarColor">@color/app_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+    <string name="widget_description">YTÜ öğrenci yemek menüsü. Öğün ve menü türünü uygulamadan seçebilirsiniz.</string>
+</resources>

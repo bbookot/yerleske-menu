@@ -53,7 +53,7 @@ class MenuStore(context: Context) {
         set(value) { prefs.edit().putBoolean("vegetarian", value).apply() }
     var theme: Int
         get() = prefs.getInt("theme", 0)
-        set(value) { prefs.edit().putInt("theme", value).apply() }
+        set(value) { prefs.edit().putInt("theme", value.coerceIn(0,2)).commit() }
     val mealKey get() = if (evening) { if (vegetarian) "dinner2_menu" else "dinner_menu" } else { if (vegetarian) "lunch2_menu" else "lunch_menu" }
     val mealLabel get() = (if (evening) "Akşam" else "Öğle") + " · " + if (vegetarian) "Vejetaryen" else "Normal"
     fun days(month: YearMonth): List<MenuDay> = runCatching { MenuParser.parse(prefs.getString("data_$month", "[]")!!) }.getOrDefault(emptyList())
@@ -91,6 +91,7 @@ class MenuStore(context: Context) {
 class MenuApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+        applyApplicationNightMode(this,MenuStore(this).theme)
         val request = PeriodicWorkRequestBuilder<MenuWorker>(6, TimeUnit.HOURS)
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("menu-sync", ExistingPeriodicWorkPolicy.KEEP, request)

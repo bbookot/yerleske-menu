@@ -45,11 +45,14 @@ class WidgetSettingsActivity : ComponentActivity() {
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
+        applySavedTheme()
         super.onCreate(savedInstanceState)
         setContent {
-            val systemDark = isSystemInDarkTheme()
-            val dark = when (MenuStore(this).theme) { 1 -> false; 2 -> true; else -> systemDark }
-            MaterialTheme(colorScheme = if (dark) darkColorScheme() else lightColorScheme()) {
+            // Widget SYSTEM mode follows the launcher, independently of the app's theme.
+            val systemDark = android.content.res.Resources.getSystem().configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            val appOptions = AppSettingsStore(this).read()
+            MenuTheme(appOptions) {
+                AppSystemBars(appOptions)
                 SettingsScreen(systemDark)
             }
         }
@@ -60,10 +63,11 @@ class WidgetSettingsActivity : ComponentActivity() {
     private fun SettingsScreen(systemDark: Boolean) {
         val store = remember { WidgetSettingsStore(this) }
         var options by remember { mutableStateOf(store.read()) }
+        var timedMeals by remember { mutableStateOf(AppSettingsStore(this).read().timedMeals) }
         var resetDialog by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<String?>(null) }
         fun change(value: WidgetOptions) { store.write(value); options = value.normalized(); settingsChanged = true }
-        LaunchedEffect(options) {
+        LaunchedEffect(options,timedMeals) {
             delay(150)
             try { redrawWidgets(this@WidgetSettingsActivity); error = null }
             catch (e: CancellationException) { throw e }
@@ -112,6 +116,12 @@ class WidgetSettingsActivity : ComponentActivity() {
                     FilterChip(!options.vegetarian, onClick = { change(options.copy(vegetarian = false)) }, label = { Text("Normal menü") })
                     FilterChip(options.vegetarian, onClick = { change(options.copy(vegetarian = true)) }, label = { Text("Vejetaryen menü") })
                 }
+                SettingToggle("Saate göre tek öğün göster",timedMeals) {
+                    val appStore = AppSettingsStore(this@WidgetSettingsActivity)
+                    appStore.write(appStore.read().copy(timedMeals = it)); timedMeals = it; settingsChanged = true
+                    scheduleWidgetClock(this@WidgetSettingsActivity)
+                }
+                Text("Uygulamayla ortak ayar: 06.00–14.30 öğle, 14.30–19.15 akşam; ardından sonraki hizmet gününün iki öğünü. İleri tarihlerde iki öğün görünür.",fontSize = 12.sp,color = MaterialTheme.colorScheme.onSurfaceVariant)
                 SettingTitle("Gösterilecek bilgiler")
                 SettingToggle("Servis saatleri", options.hours) { change(options.copy(hours = it)) }
                 SettingToggle("Kalori bilgileri", options.calories) { change(options.copy(calories = it)) }
